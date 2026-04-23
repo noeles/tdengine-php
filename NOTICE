@@ -1,0 +1,8 @@
+This package merges source code previously distributed as:
+
+- yurunsoft/tdengine-restful-connector (MIT) — REST client under namespace Yurun\TDEngine\
+- albertwill/tdengine-orm (MIT) — ORM under namespace Yurun\TDEngine\Orm\
+
+Composer resolves Yurun\TDEngine\Orm\ before the shorter Yurun\TDEngine\ prefix.
+
+Upstream references (for tracking updates): see repository README or release notes.
