@@ -1,6 +1,6 @@
 {
     "name": "noeles/tdengine-php",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "description": "TDengine REST 客户端与 ORM 合并包（基于 yurunsoft/tdengine-restful-connector 与 albertwill/tdengine-orm 源码整合，命名空间未变）",
     "type": "library",
     "license": "MIT",
