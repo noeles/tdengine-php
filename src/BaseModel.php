@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Yurun\TDEngine\Orm;
 
+use Yurun\TDEngine\Exception\NetworkException;
+use Yurun\TDEngine\Exception\OperationException;
 use Yurun\TDEngine\Orm\Annotation\Tag;
 use Yurun\TDEngine\Orm\Contract\IQueryResult;
 use Yurun\TDEngine\Orm\Enum\DataType;
@@ -245,28 +247,50 @@ abstract class BaseModel implements \JsonSerializable
     }
 
     /**
-     * 刷新Tag数据（新增一个Tag列时，刷新历史每个子表的这个Tag值用）
-     * @param string $subTableName
-     * @param string $tag
-     * @param $value
+     * 批量刷新Tag数据
+     *
+     * @param  string  $subTableName
+     * @param  array   $tagList
+     *
+     * @example $tagList = [
+     *              'tag1'=> 'val1',
+     *              'tag2'=> 'val2',
+     *              ...
+     *          ];
+     *
      * @return int
-     * @throws \Yurun\TDEngine\Exception\NetworkException
-     * @throws \Yurun\TDEngine\Exception\OperationException
+     * @throws NetworkException
+     * @throws OperationException
      */
-    public static function flushTags(string $subTableName,string $tag, $value): int
+    public static function batchFlushTags(string $subTableName, array $tagList): int
     {
         //获取所有的TAGS
         $tags = self::__getMeta()->getTags();
-        //判断是否存在这个tag
-        if(!array_key_exists($tag, $tags)){
-            throw new \RuntimeException("'tag:{$tag} not exists'");
-        }
 
         //执行对象
-        $sql = 'ALTER TABLE ' . self::getSubTableName($subTableName);
+        $sql = 'ALTER TABLE ' . self::getSubTableName($subTableName) . ' SET TAG ';
 
-        //重置的tags
-        $sql .=  ' SET TAG `' . $tag . '` = '. self::parseValue($tags[$tag]->type, $value);
+        if(!$tagList){
+            throw new \RuntimeException("'tagList is empty'");
+        }
+
+        $setTags = [];
+        foreach ($tagList as $tag => $value) {
+
+            //判断是否存在这个tag
+            if(!array_key_exists($tag, $tags)){
+                continue;
+            }
+
+            //重置的tags
+            $setTags[] = '`' . $tag . '` = '. self::parseValue($tags[$tag]->type, $value);
+        }
+
+        if(empty($setTags)){
+            throw new \RuntimeException("'tags is empty'");
+        }
+
+        $sql .= implode(',', $setTags);
 
         $result = TDEngineOrm::getClientHandler()->query($sql, self::__getMeta()->getTable()->client ?? null);
 
