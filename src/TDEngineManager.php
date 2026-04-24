@@ -62,6 +62,21 @@ class TDEngineManager
     }
 
     /**
+     * 移除已缓存的客户端实例（配置保留）.
+     *
+     * 与 {@see getClient()} 使用相同的 {@see getClientName()} 解析规则。
+     * 下次 {@see getClient()} 会重新构造 {@see Client} 与 HTTP 会话，可用于网络异常后换连接。
+     */
+    public static function removeClient(?string $clientName = null): void
+    {
+        $clientName = static::getClientName($clientName);
+        if (isset(static::$clients[$clientName]))
+        {
+            unset(static::$clients[$clientName]);
+        }
+    }
+
+    /**
      * 设置默认客户端名.
      */
     public static function setDefaultClientName(string $clientName): void

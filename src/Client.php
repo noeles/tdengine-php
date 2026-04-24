@@ -84,6 +84,22 @@ class Client
         return $this->httpClient;
     }
 
+    /**
+     * 丢弃当前 HTTP 客户端缓存，下次请求会新建 {@see HttpRequest}（不换 {@see Client} 实例）.
+     *
+     * 在 keepAlive 或 Swoole 协程上下文中会一并清理协程内缓存的客户端。
+     */
+    public function resetHttpClient(): void
+    {
+        $this->httpClient = null;
+        if ($this->haveSwoole && Coroutine::getCid() > 0)
+        {
+            $context = Coroutine::getContext();
+            $key = spl_object_hash($this);
+            unset($context[self::class][$key]);
+        }
+    }
+
     public function request(string $path, string $postBody): array
     {
         $config = $this->getConfig();
